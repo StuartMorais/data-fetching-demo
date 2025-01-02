@@ -1,22 +1,46 @@
-type User = {
-  id: number;
-  name: string;
-  username: string;
-  email: string;
-  phone: string;
-}
+import { Form } from "@/app/users/form";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { supabase } from "@/lib/supabase";
+import { format } from "date-fns";
 
 export default async function UsersPage() {
-  const response = await fetch('https://jsonplaceholder.typicode.com/users');
-  const users = await response.json();
-  console.log (users);
-  return <div>
-    <h1>Users</h1>
-    <ul>
-      {/* First way of showing fetched data, this way you can show the data in a more custom and organized way */}
-      {users.map((users: User) => <li key={users.id}> {users.id} | {users.name} | {users.email} | {users.phone} | {users.username}</li>)}
-      {/* Second way of showing fetched data, this method will show the data in a more raw way */}
-      {/* <pre>{JSON.stringify(users, null, 2)}</pre> */}
-    </ul>
-  </div>
+  const { data: users, error } = await supabase.from("users").select("*");
+  if (error) {
+    console.error(error);
+    return <div className="text-red-500">Error fetching users data</div>;
+  }
+  return (
+    <div className="overflow-x-auto p-4 justify-center grid">
+      {/* Table showing users */}
+      <div className="Table">
+        <Table className="min-w-full border border-gray-700 text-white">
+          <TableHeader>
+            <TableRow>
+              <TableHead>ID</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Password</TableHead>
+              <TableHead>Date Hour</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {users.map((user) => (
+              <TableRow key={user.id}>
+                <TableCell>{user.id}</TableCell>
+                <TableCell>{user.name}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>{user.password}</TableCell>
+                <TableCell> {user.date_hour ? format(new Date(user.date_hour), "dd-MM-yyyy HH:mm:ss") : "N/A"}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      {/* form to add users to the table */}
+      <div className="Form">
+        <Form />
+      </div>
+    </div>
+  );
 }
